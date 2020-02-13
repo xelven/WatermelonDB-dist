@@ -68,7 +68,7 @@ var encodeFTSDeleteTrigger = function encodeFTSDeleteTrigger({
     tableName: tableName,
     ftsTableName: ftsTableName,
     event: 'delete',
-    action: "delete from ".concat((0, _encodeName.default)(ftsTableName), " where \"rowid\" = \"OLD.rowid\";")
+    action: "delete from ".concat((0, _encodeName.default)(ftsTableName), " where \"rowid\" = OLD.rowid;")
   });
 };
 
@@ -82,7 +82,7 @@ var encodeFTSInsertTrigger = function encodeFTSInsertTrigger({
   })));
   var columns = rawColumnNames.map(_encodeName.default);
   var valueColumns = rawColumnNames.map(function (column) {
-    return (0, _encodeName.default)("NEW.".concat(column));
+    return "NEW.".concat((0, _encodeName.default)(column));
   });
   var columnsSQL = columns.join(', ');
   var valueColumnsSQL = valueColumns.join(', ');
@@ -103,14 +103,14 @@ var encodeFTSUpdateTrigger = function encodeFTSUpdateTrigger({
     return column.name;
   });
   var assignments = rawColumnNames.map(function (column) {
-    return "".concat((0, _encodeName.default)(column), "=").concat((0, _encodeName.default)("NEW.".concat(column)));
+    return "".concat((0, _encodeName.default)(column), " = NEW.").concat((0, _encodeName.default)(column));
   });
   var assignmentsSQL = assignments.join(', ');
   return encodeFTSTrigger({
     tableName: tableName,
     ftsTableName: ftsTableName,
     event: 'update',
-    action: "update ".concat((0, _encodeName.default)(ftsTableName), " set ").concat(assignmentsSQL, " where \"rowid\" = \"NEW.rowid\";")
+    action: "update ".concat((0, _encodeName.default)(ftsTableName), " set ").concat(assignmentsSQL, " where \"rowid\" = NEW.\"rowid\";")
   });
 };
 
