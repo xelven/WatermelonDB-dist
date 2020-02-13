@@ -16,6 +16,7 @@ exports.between = between;
 exports.like = like;
 exports.notLike = notLike;
 exports.sanitizeLikeString = sanitizeLikeString;
+exports.textMatches = textMatches;
 exports.column = column;
 exports.where = where;
 exports.and = and;
@@ -215,6 +216,15 @@ var nonLikeSafeRegexp = /[^a-zA-Z0-9]/g;
 
 function sanitizeLikeString(value) {
   return value.replace(nonLikeSafeRegexp, '_');
+}
+
+function textMatches(value) {
+  return {
+    operator: 'match',
+    right: {
+      value: value
+    }
+  };
 }
 
 function column(name) {

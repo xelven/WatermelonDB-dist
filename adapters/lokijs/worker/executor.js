@@ -330,6 +330,9 @@ function () {
     var indexedColumns = (0, _rambdax.values)(columns).reduce(function (indexes, column) {
       return column.isIndexed ? indexes.concat([column.name]) : indexes;
     }, []);
+
+    this._warnAboutLackingFTSSupport((0, _rambdax.values)(columns));
+
     this.loki.addCollection(name, {
       unique: ['id'],
       indices: ['_status'].concat(_toConsumableArray(indexedColumns)),
@@ -500,6 +503,8 @@ function () {
         collection.ensureIndex(column.name);
       }
     });
+
+    this._warnAboutLackingFTSSupport(columns);
   } // Maps records to their IDs if the record is already cached on JS side
   ;
 
@@ -524,6 +529,19 @@ function () {
   _proto._findLocal = function _findLocal(key) {
     var localStorage = this._localStorage;
     return localStorage && localStorage.by('key', key);
+  };
+
+  _proto._warnAboutLackingFTSSupport = function _warnAboutLackingFTSSupport(columns) {
+    var searchableColumns = columns.filter(function (column) {
+      return column.isSearchable;
+    });
+
+    if (searchableColumns.length > 0) {
+      // Warn the user about missing FTS support for the LokiJS adapter
+      // Please contribute! Here are some pointers:
+      // https://github.com/LokiJS-Forge/LokiDB/blob/master/packages/full-text-search/spec/generic/full_text_search.spec.ts
+      _common.logger.warn('[DB][Worker] LokiJS support for FTS is still to be implemented');
+    }
   };
 
   _createClass(LokiExecutor, [{

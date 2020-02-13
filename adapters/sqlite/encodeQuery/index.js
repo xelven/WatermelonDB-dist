@@ -53,7 +53,8 @@ var operators = {
   notIn: 'not in',
   between: 'between',
   like: 'like',
-  notLike: 'not like'
+  notLike: 'not like',
+  match: 'match'
 };
 
 var encodeComparison = function encodeComparison(table, comparison) {
@@ -84,6 +85,15 @@ var encodeWhereCondition = function encodeWhereCondition(table, left, comparison
   // if a column, we must check for `not null > null`
   if (comparison.operator === 'weakGt' && comparison.right.column) {
     return encodeWhere(table)(Q.or(Q.where(left, Q.gt(comparison.right)), Q.and(Q.where(left, Q.notEq(null)), Q.where(comparison.right.column, null))));
+  }
+
+  if (comparison.operator === 'match') {
+    var srcTable = (0, _encodeName.default)(table);
+    var ftsTable = (0, _encodeName.default)("".concat(table, "_fts"));
+    var rowid = (0, _encodeName.default)('rowid');
+    var ftsColumn = (0, _encodeName.default)(left);
+    var matchValue = getComparisonRight(table, comparison.right);
+    return "".concat(srcTable, ".").concat(rowid, " in (") + "select ".concat(ftsTable, ".").concat(rowid, " from ").concat(ftsTable, " ") + "where ".concat(ftsTable, ".").concat(ftsColumn, " match ").concat(matchValue) + ")";
   }
 
   return "".concat((0, _encodeName.default)(table), ".").concat((0, _encodeName.default)(left), " ").concat(encodeComparison(table, comparison));

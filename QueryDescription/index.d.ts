@@ -16,6 +16,7 @@ declare module '@nozbe/watermelondb/QueryDescription' {
     | 'oneOf'
     | 'notIn'
     | 'between'
+    | 'match'
 
   export interface ColumnDescription {
     column: ColumnName
@@ -88,9 +89,9 @@ declare module '@nozbe/watermelondb/QueryDescription' {
   export function where(left: ColumnName, valueOrComparison: Value | Comparison): WhereDescription
   export function and(...conditions: Where[]): And
   export function or(...conditions: Where[]): Or
+  export function textMatches(value: string): Comparison
   export function like(value: string): Comparison
   export function notLike(value: string): Comparison
-  export function sortBy(columnName: ColumnName, sortOrder?: SortOrder): SortBy
   export function take(count: number): Take
   export function skip(count: number): Skip
   export function sanitizeLikeString(value: string): string
