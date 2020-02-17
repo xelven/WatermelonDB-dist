@@ -119,7 +119,6 @@ var encodeFTSTriggers = function encodeFTSTriggers({
   ftsTableName: ftsTableName,
   ftsColumns: ftsColumns
 }) {
-  var updateTrigger = '';
   return encodeFTSDeleteTrigger({
     tableName: tableName,
     ftsTableName: ftsTableName

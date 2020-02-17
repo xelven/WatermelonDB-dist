@@ -150,16 +150,24 @@ var encodeJoin = function encodeJoin(table, associations) {
 };
 
 var encodeOrderBy = function encodeOrderBy(table, sortBys) {
-  if (sortBys.length === 0) return '';
-  return ' order by ' + sortBys.map(function (sortBy) {
-    return "".concat((0, _encodeName.default)(table), ".").concat((0, _encodeName.default)(sortBy.columnName), " ").concat(sortBy.sortOrder);
+  if (sortBys.length === 0) {
+    return '';
+  }
+
+  var orderBys = sortBys.map(function (sortBy) {
+    return "".concat((0, _encodeName.default)(table), ".").concat((0, _encodeName.default)(sortBy.sortColumn), " ").concat(sortBy.sortOrder);
   }).join(', ');
+  return " order by ".concat(orderBys);
 };
 
 var encodeLimitOffset = function encodeLimitOffset(take, skip) {
   var limit = take === null || take === void 0 ? void 0 : take.count;
   var offset = skip === null || skip === void 0 ? void 0 : skip.count;
-  if (!limit) return '';
+
+  if (!limit) {
+    return '';
+  }
+
   var optionalOffsetStmt = offset ? " offset ".concat(offset) : '';
   return " limit ".concat(limit).concat(optionalOffsetStmt);
 };

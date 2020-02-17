@@ -263,10 +263,10 @@ function or(...conditions) {
   };
 }
 
-function sortBy(columnName, sortOrder = 'asc') {
+function sortBy(sortColumn, sortOrder = 'asc') {
   return {
     type: 'sortBy',
-    columnName: columnName,
+    sortColumn: sortColumn,
     sortOrder: sortOrder
   };
 }
@@ -314,35 +314,42 @@ exports.on = on;
 var syncStatusColumn = (0, _Schema.columnName)('_status');
 
 var extractClauses = function extractClauses(conditions) {
-  var groups = {
-    on: [],
+  var clauses = {
+    join: [],
     sortBy: [],
     where: [],
     take: null,
     skip: null
   };
   conditions.forEach(function (cond) {
-    switch (cond.type) {
+    var {
+      type: type
+    } = cond;
+
+    switch (type) {
       case 'on':
+        type = 'join';
+      // fallthrough
+
       case 'sortBy':
         // $FlowFixMe: Flow is too dumb to realize that it is valid
-        groups[cond.type].push(cond);
+        clauses[type].push(cond);
         break;
 
       case 'take':
       case 'skip':
         // $FlowFixMe: Flow is too dumb to realize that it is valid
-        groups[cond.type] = cond;
+        clauses[type] = cond;
         break;
 
       default:
       case 'where':
-        groups['where'].push(cond);
+        clauses.where.push(cond);
         break;
     }
   }); // $FlowFixMe: Flow is too dumb to realize that it is valid
 
-  return groups;
+  return clauses;
 };
 
 var whereNotDeleted = where(syncStatusColumn, notEq('deleted'));
@@ -351,21 +358,9 @@ var joinsWithoutDeleted = (0, _rambdax.pipe)((0, _rambdax.map)((0, _rambdax.prop
 }));
 
 function buildQueryDescription(conditions) {
-  var {
-    on: on,
-    sortBy: sortBy,
-    where: where,
-    take: take,
-    skip: skip
-  } = extractClauses(conditions);
-  (0, _invariant.default)(!(skip && !take), 'cannot skip without take');
-  var query = {
-    join: on,
-    sortBy: sortBy,
-    where: where,
-    take: take,
-    skip: skip
-  };
+  var clauses = extractClauses(conditions);
+  (0, _invariant.default)(!(clauses.skip && !clauses.take), 'cannot skip without take');
+  var query = clauses;
 
   if (process.env.NODE_ENV !== 'production') {
     Object.freeze(query);

@@ -167,17 +167,22 @@ const encodeJoin = (table: TableName<any>, associations: AssociationArgs[]): str
   associations.length ? associations.map(encodeAssociation(table)).join('') : ''
 
 const encodeOrderBy = (table: TableName<any>, sortBys) => {
-  if (sortBys.length === 0) return ''
-  return ' order by ' + sortBys.map((sortBy) => (
-    `${encodeName(table)}.${encodeName(sortBy.columnName)} ${sortBy.sortOrder}`
-  )).join(', ')
+  if (sortBys.length === 0) {
+    return ''
+  }
+  const orderBys = sortBys.map(sortBy =>
+    `${encodeName(table)}.${encodeName(sortBy.sortColumn)} ${sortBy.sortOrder}`
+  ).join(', ')
+  return ` order by ${orderBys}`
 }
 
 const encodeLimitOffset = (take, skip) => {
   const limit = take?.count
   const offset = skip?.count
 
-  if (!limit) return ''
+  if (!limit) {
+    return ''
+  }
   const optionalOffsetStmt = offset ? ` offset ${offset}` : ''
 
   return ` limit ${limit}${optionalOffsetStmt}`

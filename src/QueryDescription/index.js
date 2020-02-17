@@ -1,6 +1,6 @@
 // @flow
 
-import { propEq, pipe, prop, uniq, map } from 'rambdax'
+import { pipe, prop, uniq, map } from 'rambdax'
 
 // don't import whole `utils` to keep worker size small
 import invariant from '../utils/common/invariant'
@@ -51,22 +51,14 @@ export type On = $RE<{
   left: ColumnName,
   comparison: Comparison,
 }>
-export type Condition = Where | On | SortBy | Take | Skip
-export type QueryDescription = $RE<{
-  where: Where[],
-  join: On[],
-  sortBy: SortBy[],
-  take: ?Take,
-  skip: ?Skip,
-}>
-export type SortBy = $RE<{
-  type: 'sortBy',
-  columnName: ColumnName,
-  sortOrder: SortOrder,
-}>
 export type SortOrder =
   | 'asc'
   | 'desc'
+export type SortBy = $RE<{
+  type: 'sortBy',
+  sortColumn: ColumnName,
+  sortOrder: SortOrder,
+}>
 export type Take = $RE<{
   type: 'take',
   count: number,
@@ -74,6 +66,14 @@ export type Take = $RE<{
 export type Skip = $RE<{
   type: 'skip',
   count: number,
+}>
+export type Condition = Where | On | SortBy | Take | Skip
+export type QueryDescription = $RE<{
+  where: Where[],
+  join: On[],
+  sortBy: SortBy[],
+  take: ?Take,
+  skip: ?Skip,
 }>
 
 // Note: These operators are designed to match SQLite semantics
@@ -224,8 +224,8 @@ export function or(...conditions: Where[]): Or {
   return { type: 'or', conditions }
 }
 
-export function sortBy(columnName: ColumnName, sortOrder: SortOrder = 'asc'): SortBy {
-  return { type: 'sortBy', columnName, sortOrder }
+export function sortBy(sortColumn: ColumnName, sortOrder: SortOrder = 'asc'): SortBy {
+  return { type: 'sortBy', sortColumn, sortOrder }
 }
 
 export function take(count: number): Take {
@@ -269,34 +269,31 @@ export const on: OnFunction = (table, leftOrWhereDescription, valueOrComparison)
 }
 
 const syncStatusColumn = columnName('_status')
-const extractClauses: (Condition[]) => {
-  on: On[],
-  sortBy: SortBy[],
-  where: Where[],
-  take: ?Take,
-  skip: ?Skip,
-} = conditions => {
-  const groups = { on: [], sortBy: [], where: [], take: null, skip: null, }
+const extractClauses: (Condition[]) => QueryDescription = conditions => {
+  const clauses = { join: [], sortBy: [], where: [], take: null, skip: null }
   conditions.forEach(cond => {
-    switch (cond.type) {
+    let { type } = cond
+    switch (type) {
       case 'on':
+        type = 'join'
+        // fallthrough
       case 'sortBy':
         // $FlowFixMe: Flow is too dumb to realize that it is valid
-        groups[cond.type].push(cond)
+        clauses[type].push(cond)
         break
       case 'take':
       case 'skip':
         // $FlowFixMe: Flow is too dumb to realize that it is valid
-        groups[cond.type] = cond
+        clauses[type] = cond
         break
       default:
       case 'where':
-        groups['where'].push(cond)
+        clauses.where.push(cond)
         break
     }
   })
   // $FlowFixMe: Flow is too dumb to realize that it is valid
-  return groups
+  return clauses
 }
 const whereNotDeleted = where(syncStatusColumn, notEq('deleted'))
 const joinsWithoutDeleted = pipe(
@@ -306,11 +303,11 @@ const joinsWithoutDeleted = pipe(
 )
 
 export function buildQueryDescription(conditions: Condition[]): QueryDescription {
-  const { on, sortBy, where, take, skip } = extractClauses(conditions)
+  const clauses = extractClauses(conditions)
 
-  invariant(!(skip && !take), 'cannot skip without take')
+  invariant(!(clauses.skip && !clauses.take), 'cannot skip without take')
 
-  const query = { join: on, sortBy, where, take, skip }
+  const query = clauses
   if (process.env.NODE_ENV !== 'production') {
     Object.freeze(query)
   }

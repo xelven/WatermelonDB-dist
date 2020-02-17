@@ -168,7 +168,7 @@ var getAllRecordsToApply = function getAllRecordsToApply(db, remoteChanges) {
     var collection = db.collections.get(tableName);
 
     if (!collection) {
-      return Promise.reject("You are trying to sync a collection named ".concat(tableName, ", but currently this collection does not exist.") + "Have you remembered to add it to your Database constructor's modelClasses property?");
+      return Promise.reject(new Error("You are trying to sync a collection named ".concat(tableName, ", but currently this collection does not exist.") + "Have you remembered to add it to your Database constructor's modelClasses property?"));
     }
 
     return recordsToApplyRemoteChangesTo(collection, changes);

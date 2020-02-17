@@ -52,7 +52,7 @@ declare module '@nozbe/watermelondb/QueryDescription' {
   }
   export interface SortBy {
     type: 'sortBy'
-    columnName: ColumnName
+    sortColumn: ColumnName
     sortOrder: SortOrder
   }
   export type SortOrder =
@@ -92,6 +92,7 @@ declare module '@nozbe/watermelondb/QueryDescription' {
   export function textMatches(value: string): Comparison
   export function like(value: string): Comparison
   export function notLike(value: string): Comparison
+  export function sortBy(sortColumn: ColumnName, sortOrder?: SortOrder): SortBy
   export function take(count: number): Take
   export function skip(count: number): Skip
   export function sanitizeLikeString(value: string): string
