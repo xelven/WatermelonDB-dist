@@ -56,7 +56,7 @@ const encodeFTSDeleteTrigger: ({
     tableName,
     ftsTableName,
     event: 'delete',
-    action: `delete from ${encodeName(ftsTableName)} where "rowid" = OLD.rowid;`,
+    action: `delete from ${encodeName(ftsTableName)} where "rowid" = OLD.rowid`,
   })
 
 const encodeFTSInsertTrigger: ({
@@ -75,7 +75,7 @@ const encodeFTSInsertTrigger: ({
     tableName,
     ftsTableName,
     event: 'insert',
-    action: `insert into ${encodeName(ftsTableName)} (${columnsSQL}) values (${valueColumnsSQL});`,
+    action: `insert into ${encodeName(ftsTableName)} (${columnsSQL}) values (${valueColumnsSQL})`,
   })
 }
 
@@ -95,7 +95,7 @@ const encodeFTSUpdateTrigger: ({
     tableName,
     ftsTableName,
     event: 'update',
-    action: `update ${encodeName(ftsTableName)} set ${assignmentsSQL} where "rowid" = NEW."rowid";`,
+    action: `update ${encodeName(ftsTableName)} set ${assignmentsSQL} where "rowid" = NEW."rowid"`,
   })
 }
 
